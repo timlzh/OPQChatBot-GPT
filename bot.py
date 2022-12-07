@@ -1,4 +1,5 @@
 from botoy import Action, Botoy, EventMsg, FriendMsg, GroupMsg
+from json import loads
 from botoy import decorators as deco
 import api
 
@@ -35,13 +36,20 @@ def key_msg(ctx: GroupMsg):
 
 @bot.on_group_msg
 @deco.ignore_botself
-@deco.startswith('/preset')
 def preset_msg(ctx: GroupMsg):
-    if ctx.Content == '/preset':
+    try:
+        content = loads(ctx.Content)['Content']
+    except:
+        content = ctx.Content
+    print(content)
+    print(type(content))
+    if not content.startswith('/preset'):
+        return
+    if content == '/preset':
         action.sendGroupText(ctx.FromGroupId, '请输入预设内容')
     else:
         id = ctx.FromGroupId
-        msg = ctx.Content.replace('/preset', '')
+        msg = content.replace('/preset', '')
         api.setPreset(str(id), msg)
         action.sendGroupText(ctx.FromGroupId, '已设置预设内容')
 
@@ -72,6 +80,13 @@ def get_msg(ctx: GroupMsg):
     res = str(api.getConfig(str(id)))
     action.sendGroupText(ctx.FromGroupId, res)
 
+@bot.on_group_msg
+@deco.ignore_botself
+@deco.equal_content('/clear')
+def clear_msg(ctx: GroupMsg):
+    id = ctx.FromGroupId
+    api.clear(str(id))
+    action.sendGroupText(ctx.FromGroupId, '已重置对话')
 
 @bot.on_group_msg
 @deco.ignore_botself

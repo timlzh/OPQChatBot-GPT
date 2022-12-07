@@ -58,7 +58,11 @@ def setEnableContext(id, enable_context):
 
 def setMaxTokens(id, max_tokens):
     config[id]['openai']['max_tokens'] = max(min(max_tokens, 4096),4)
-    
+
+def clear(id):
+    config[id]['context'] = ''
+    config[id]['preset'] = ''
+
 def get_chat(prompt,group_config):
     try:
         openai.api_key = group_config['api_key'] or defaultApiKey
