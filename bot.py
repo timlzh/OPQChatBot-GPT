@@ -36,6 +36,46 @@ def key_msg(ctx: GroupMsg):
 
 @bot.on_group_msg
 @deco.ignore_botself
+@deco.startswith('/mem')
+def mem_msg(ctx: GroupMsg):
+    if ctx.Content == '/mem':
+        action.sendGroupText(ctx.FromGroupId, '请输入长度上限')
+    else:
+        id = ctx.FromGroupId
+        msg = ctx.Content[5:]
+        action.sendGroupText(ctx.FromGroupId, '已修改长度上限')
+        print(int(msg))
+        api.setMaxTokens(str(id), int(msg))
+        
+
+@bot.on_group_msg
+@deco.ignore_botself
+def key_msg(ctx: GroupMsg):
+    try:
+        content = loads(ctx.Content)['Content']
+    except:
+        content = ctx.Content
+    print(content)
+    print(type(content))
+    if not content.startswith('/set'):
+        return
+    if content == '/set':
+        action.sendGroupText(ctx.FromGroupId, '请输入config')
+    else:
+        id = ctx.FromGroupId
+        msg = content[5:]
+        msg_par = ''
+        for i in msg:
+            if i == '"': msg_par += "'"
+            elif i == "'": msg_par += '"'
+            else: msg_par += i
+        msg_par = msg_par.replace("True","true")
+        msg_par = msg_par.replace("False","false")
+        api.setConfig(str(id), dict(loads(msg_par)))
+        action.sendGroupText(ctx.FromGroupId, '已设置config')
+
+@bot.on_group_msg
+@deco.ignore_botself
 def preset_msg(ctx: GroupMsg):
     try:
         content = loads(ctx.Content)['Content']
@@ -54,13 +94,6 @@ def preset_msg(ctx: GroupMsg):
         action.sendGroupText(ctx.FromGroupId, '已设置预设内容')
 
 
-@bot.on_group_msg
-@deco.ignore_botself
-@deco.equal_content('/mem')
-def mem_msg(ctx: GroupMsg):
-    id = ctx.FromGroupId
-    api.setMaxTokens(str(id))
-    action.sendGroupText(ctx.FromGroupId, '已修改长度上限')
 
 
 @bot.on_group_msg
@@ -98,6 +131,7 @@ OPQChatBot-GPT 指令列表
 /chat   ：生成对话
 /clear  ：重置对话
 /get    ：查看配置
+/set    ：设置配置（直接传入get的返回值即可）
 /reset  ：重置配置
 /preset ：修改预设
 /key    ：设置 OpenAI API Key

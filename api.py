@@ -45,23 +45,33 @@ def saveConfig(id):
 def getConfig(id):
     if id not in config:
         newConfig(id)
+        saveConfig(id)
     return config[id]
+
+def setConfig(id, conf):
+    config[id] = conf;
+    saveConfig(id)
 
 def setPreset(id, preset):
     config[id]['preset'] = preset
+    saveConfig(id)
 
 def setApiKey(id, api_key):
     config[id]['api_key'] = api_key
+    saveConfig(id)
     
 def setEnableContext(id, enable_context):
     config[id]['enable_context'] = enable_context
+    saveConfig(id)
 
 def setMaxTokens(id, max_tokens):
     config[id]['openai']['max_tokens'] = max(min(max_tokens, 4096),4)
+    saveConfig(id)
 
 def clear(id):
     config[id]['context'] = ''
     config[id]['preset'] = ''
+    saveConfig(id)
 
 def get_chat(prompt,group_config):
     try:
