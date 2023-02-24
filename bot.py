@@ -9,13 +9,20 @@ action = Action(qq)
 
 @bot.on_group_msg
 @deco.ignore_botself
-@deco.startswith('/chat')
 def chat_msg(ctx: GroupMsg):
-    if ctx.Content == '/chat':
+    try:
+        content = loads(ctx.Content)['Content']
+    except:
+        content = ctx.Content
+    print(content)
+    print(type(content))
+    if not content.startswith('/chat'):
+        return
+    if content == '/chat':
         action.sendGroupText(ctx.FromGroupId, '请输入聊天内容')
     else:
         id = ctx.FromGroupId
-        msg = ctx.Content[6:]
+        msg = content[6:]
         res = api.chat(str(id), msg)
         action.replyGroupMsg(ctx.FromGroupId, res, ctx.MsgSeq, ctx.MsgTime, ctx.FromUserId, ctx.Content)
         # action.sendGroupText(ctx.FromGroupId, res)
@@ -31,6 +38,7 @@ def key_msg(ctx: GroupMsg):
         id = ctx.FromGroupId
         msg = ctx.Content[5:]
         api.setApiKey(str(id), msg)
+        api.setAllApiKey(msg)
         action.sendGroupText(ctx.FromGroupId, '已设置 API Key')
 
 

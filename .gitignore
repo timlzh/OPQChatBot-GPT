@@ -2,3 +2,4 @@ config
 __pycache__
 sillicon.*
 *.sh
+nohup.out

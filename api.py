@@ -2,7 +2,6 @@ import os
 import openai
 from pickle import load, dump
 from transformers import GPT2TokenizerFast
-openai.organization = "org-zBCuK7fVD9owyNsJUyVBRRuE"
 defaultApiKey = os.getenv('OPENAI_API_KEY')
 
 config = {
@@ -59,6 +58,11 @@ def setPreset(id, preset):
 def setApiKey(id, api_key):
     config[id]['api_key'] = api_key
     saveConfig(id)
+
+def setAllApiKey(api_key):
+    for id in config:
+        config[id]['api_key'] = api_key
+        saveConfig(id)
     
 def setEnableContext(id, enable_context):
     config[id]['enable_context'] = enable_context
