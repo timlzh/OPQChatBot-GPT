@@ -2,6 +2,11 @@ import os
 import openai
 from pickle import load, dump
 from transformers import GPT2TokenizerFast
+import edge_tts
+import time
+import asyncio
+import base64
+
 defaultApiKey = os.getenv('OPENAI_API_KEY')
 
 config = {
@@ -10,6 +15,7 @@ config = {
         'api_key': '',
         'enable_context': True,
         'context': '',
+        'voice': 'zh-CN-XiaoxiaoNeural',
         'openai': {
             'model': 'text-davinci-003',
             'temperature': 0.9,
@@ -21,10 +27,13 @@ config = {
         }
     }
 }
+
+supported_voices = ""
+
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 openai.proxy = {
-    "http": "http://localhost:7890",
-    "https": "http://localhost:7890",
+   "http": "http://localhost:7890",
+   "https": "http://localhost:7890",
 }
 if os.path.exists('config'):
     for file in os.listdir('config'):
@@ -53,6 +62,10 @@ def setConfig(id, conf):
 
 def setPreset(id, preset):
     config[id]['preset'] = preset
+    saveConfig(id)
+    
+def setVoice(id, voice):
+    config[id]['voice'] = voice
     saveConfig(id)
 
 def setApiKey(id, api_key):
@@ -119,6 +132,23 @@ def chat(id, prompt):
     saveConfig(id)
     return resp
 
+async def to_mp3(text, voice, name):
+    communicate = edge_tts.Communicate(text, voice)
+    await communicate.save(name)
+
+def to_speech(id, text):
+    if 'voice' not in getConfig(id):
+        setVoice(id, 'zh-CN-XiaoxiaoNeural')
+    path = os.path.join(os.path.dirname(__file__), 'temp')
+    name = os.path.join(path, f'{id}-{time.time()}.mp3')
+    print(name)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(to_mp3(text, getConfig(id)['voice'], name))
+    return name
+    # base64_data = base64.b64encode(open(name, 'rb').read())
+    # return base64_data
+    
 if __name__ == '__main__':
     while True:
         prompt = input('>>>')

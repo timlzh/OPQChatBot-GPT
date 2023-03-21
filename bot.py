@@ -2,10 +2,14 @@ from botoy import Action, Botoy, EventMsg, FriendMsg, GroupMsg
 from json import loads
 from botoy import decorators as deco
 import api
+import time
+import os
 
-qq = 2985781277
+qq = 1315284898 
 bot = Botoy(qq=qq, use_plugins=False)
 action = Action(qq)
+
+
 
 @bot.on_group_msg
 @deco.ignore_botself
@@ -16,16 +20,22 @@ def chat_msg(ctx: GroupMsg):
         content = ctx.Content
     print(content)
     print(type(content))
-    if not content.startswith('/chat'):
+    if not (content.startswith('/chat') or content.startswith('/vchat')):
         return
-    if content == '/chat':
+    if content in ['/chat', '/vchat']:
         action.sendGroupText(ctx.FromGroupId, '请输入聊天内容')
     else:
         id = ctx.FromGroupId
         msg = content[6:]
         res = api.chat(str(id), msg)
-        action.replyGroupMsg(ctx.FromGroupId, res, ctx.MsgSeq, ctx.MsgTime, ctx.FromUserId, ctx.Content)
-        # action.sendGroupText(ctx.FromGroupId, res)
+        if content.startswith('/chat'):
+            action.replyGroupMsg(
+                ctx.FromGroupId, res, ctx.MsgSeq, ctx.MsgTime, ctx.FromUserId, ctx.Content)
+        else:
+            name = api.to_speech(str(id), res)
+            action.sendGroupVoice(ctx.FromGroupId, voicePath=name)
+            time.sleep(10)
+            os.remove(name)
 
 
 @bot.on_group_msg
@@ -54,7 +64,7 @@ def mem_msg(ctx: GroupMsg):
         action.sendGroupText(ctx.FromGroupId, '已修改长度上限')
         print(int(msg))
         api.setMaxTokens(str(id), int(msg))
-        
+
 
 @bot.on_group_msg
 @deco.ignore_botself
@@ -74,13 +84,17 @@ def key_msg(ctx: GroupMsg):
         msg = content[5:]
         msg_par = ''
         for i in msg:
-            if i == '"': msg_par += "'"
-            elif i == "'": msg_par += '"'
-            else: msg_par += i
-        msg_par = msg_par.replace("True","true")
-        msg_par = msg_par.replace("False","false")
+            if i == '"':
+                msg_par += "'"
+            elif i == "'":
+                msg_par += '"'
+            else:
+                msg_par += i
+        msg_par = msg_par.replace("True", "true")
+        msg_par = msg_par.replace("False", "false")
         api.setConfig(str(id), dict(loads(msg_par)))
         action.sendGroupText(ctx.FromGroupId, '已设置config')
+
 
 @bot.on_group_msg
 @deco.ignore_botself
@@ -102,8 +116,6 @@ def preset_msg(ctx: GroupMsg):
         action.sendGroupText(ctx.FromGroupId, '已设置预设内容')
 
 
-
-
 @bot.on_group_msg
 @deco.ignore_botself
 @deco.equal_content('/reset')
@@ -121,6 +133,7 @@ def get_msg(ctx: GroupMsg):
     res = str(api.getConfig(str(id)))
     action.sendGroupText(ctx.FromGroupId, res)
 
+
 @bot.on_group_msg
 @deco.ignore_botself
 @deco.equal_content('/clear')
@@ -128,6 +141,7 @@ def clear_msg(ctx: GroupMsg):
     id = ctx.FromGroupId
     api.clear(str(id))
     action.sendGroupText(ctx.FromGroupId, '已重置对话')
+
 
 @bot.on_group_msg
 @deco.ignore_botself
@@ -137,6 +151,7 @@ def help_msg(ctx: GroupMsg):
                          '''\
 OPQChatBot-GPT 指令列表
 /chat   ：生成对话
+/vchat  ：生成语音对话
 /clear  ：重置对话
 /get    ：查看配置
 /set    ：设置配置（直接传入get的返回值即可）

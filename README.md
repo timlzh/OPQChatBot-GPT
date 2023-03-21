@@ -10,8 +10,10 @@
 ```
 OPQChatBot-GPT 指令列表
 /chat   ：生成对话
+/vchat  ：生成语音对话
 /clear  ：重置对话
 /get    ：查看配置
+/set    ：设置配置（直接传入get的返回值即可）
 /reset  ：重置配置
 /preset ：修改预设
 /key    ：设置 OpenAI API Key
