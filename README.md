@@ -7,6 +7,9 @@
 
 ## 使用方法
 
+
+请使用[OPQBot](https://github.com/opq-osc/OPQ)框架搭建QQ机器人，并使用[botoy](https://botoy.opqbot.com/zh_CN/latest/)插件框架运行此插件。过程较简单，跟着这两个项目的wiki来即可，不细写了。
+
 ```
 OPQChatBot-GPT 指令列表
 /chat   ：生成对话
